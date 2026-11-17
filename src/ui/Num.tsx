@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { fmt, LangCtx, makeT } from '../i18n';
+import { LangCtx, localize, makeT } from '../i18n';
 
 interface Props {
   value: number | null | undefined;
@@ -16,22 +16,19 @@ export function Num({ value, digits, note, unit, className }: Props) {
   const t = makeT(lang);
   const [full, setFull] = useState(false);
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return <span className={`num na ${className ?? ''}`}>—</span>;
+    return <span className={`num is-empty ${className ?? ''}`}>—</span>;
   }
   const raw = full ? String(+value.toPrecision(15)) : value.toFixed(digits);
-  const shown = lang === 'ru' ? raw.replace('.', ',') : raw;
   return (
     <button
       type="button"
-      className={`num ${full ? 'full' : ''} ${className ?? ''}`}
+      className={`num ${full ? 'is-full' : ''} ${className ?? ''}`}
       onClick={() => setFull((f) => !f)}
-      title={full ? t('showRounded') : t('showFull')}
+      aria-label={full ? t('showRounded') : t('showFull')}
     >
-      {shown}
-      {unit ? <span className="unit"> {unit}</span> : null}
-      {full && note ? <span className="note">{note}</span> : null}
+      <span className="num-val">{localize(lang, raw)}</span>
+      {unit ? <span className="num-unit">{unit}</span> : null}
+      {full && note ? <span className="num-note">{note}</span> : null}
     </button>
   );
 }
-
-export { fmt };

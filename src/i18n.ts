@@ -4,14 +4,34 @@ import type { Standard, Warning } from './core/calc';
 
 export type Lang = 'ka' | 'ru' | 'en';
 export const LANGS: { id: Lang; label: string }[] = [
-  { id: 'ka', label: 'ქარ' },
-  { id: 'ru', label: 'Рус' },
-  { id: 'en', label: 'Eng' },
+  { id: 'ka', label: 'ქართული' },
+  { id: 'ru', label: 'Русский' },
+  { id: 'en', label: 'English' },
 ];
 
 const ka = {
   appName: 'CalcOil',
   appSub: 'ნავთობის რაოდენობის გამოთვლა',
+  settings: 'პარამეტრები',
+  openSettings: 'პარამეტრების გახსნა',
+  close: 'დახურვა',
+  theme: 'თემა',
+  themeSystem: 'სისტემის',
+  themeLight: 'ღია',
+  themeDark: 'მუქი',
+  sshort_api2004: 'API 2004',
+  sshort_astm1980: 'ASTM 1980',
+  sshort_gost85: 'ГОСТ 85',
+  stdd_api2004: 'API MPMS 11.1-2004 და ГОСТ 3900-2022',
+  stdd_astm1980: 'Tables 54A/54B, როგორც Ullage Excel-ში',
+  stdd_gost85: 'ГОСТ 3900-85, γ ცხრილი',
+  scaleCaption: 'სხვაობა API 2004-თან',
+  toResult: 'შედეგზე გადასვლა',
+  sourceLabel: 'გაზომვა',
+  reference: 'ათვლის წერტილი',
+  waterShort: 'წყალი',
+  addTankBtn: 'ტანკის დამატება',
+  commodityLabel: 'პროდუქტი',
   standard: 'სტანდარტი',
   language: 'ენა',
   productDensity: 'პროდუქტი და სიმკვრივე',
@@ -58,10 +78,6 @@ const ka = {
   noResult: 'შედეგი ამ სტანდარტით არ ითვლება — იხ. გაფრთხილება ზემოთ.',
   comparison: 'შედარება',
   deltaApi: 'Δ API 2004-თან',
-  examples: 'მაგალითები',
-  exStar: 'ბენზინი STAR 10 (Excel)',
-  exM100: 'მაზუთი M-100, 64.5 °C',
-  exTengiz: 'Tengiz (54A)',
   usedInCalc: 'გამოთვლაში: {v}',
   showFull: 'სრული მნიშვნელობა',
   showRounded: 'დამრგვალებულის ჩვენება',
@@ -94,6 +110,26 @@ type Dict = typeof ka;
 const ru: Dict = {
   appName: 'CalcOil',
   appSub: 'Расчёт количества нефти',
+  settings: 'Настройки',
+  openSettings: 'Открыть настройки',
+  close: 'Закрыть',
+  theme: 'Тема',
+  themeSystem: 'Как в системе',
+  themeLight: 'Светлая',
+  themeDark: 'Тёмная',
+  sshort_api2004: 'API 2004',
+  sshort_astm1980: 'ASTM 1980',
+  sshort_gost85: 'ГОСТ 85',
+  stdd_api2004: 'API MPMS 11.1-2004 и ГОСТ 3900-2022',
+  stdd_astm1980: 'Таблицы 54A/54B, как в Ullage Excel',
+  stdd_gost85: 'ГОСТ 3900-85, таблица γ',
+  scaleCaption: 'Разница с API 2004',
+  toResult: 'К результату',
+  sourceLabel: 'Как измерена',
+  reference: 'база сравнения',
+  waterShort: 'Вода',
+  addTankBtn: 'Добавить танк',
+  commodityLabel: 'Продукт',
   standard: 'Стандарт',
   language: 'Язык',
   productDensity: 'Продукт и плотность',
@@ -140,10 +176,6 @@ const ru: Dict = {
   noResult: 'По этому стандарту результат не рассчитывается — см. предупреждение выше.',
   comparison: 'Сравнение',
   deltaApi: 'Δ к API 2004',
-  examples: 'Примеры',
-  exStar: 'Бензин STAR 10 (Excel)',
-  exM100: 'Мазут М-100, 64,5 °C',
-  exTengiz: 'Тенгиз (54A)',
   usedInCalc: 'в расчёте: {v}',
   showFull: 'Полное значение',
   showRounded: 'Показать округлённое',
@@ -174,6 +206,26 @@ const ru: Dict = {
 const en: Dict = {
   appName: 'CalcOil',
   appSub: 'Oil quantity calculation',
+  settings: 'Settings',
+  openSettings: 'Open settings',
+  close: 'Close',
+  theme: 'Theme',
+  themeSystem: 'System',
+  themeLight: 'Light',
+  themeDark: 'Dark',
+  sshort_api2004: 'API 2004',
+  sshort_astm1980: 'ASTM 1980',
+  sshort_gost85: 'GOST 85',
+  stdd_api2004: 'API MPMS 11.1-2004 and GOST 3900-2022',
+  stdd_astm1980: 'Tables 54A/54B, as in the Ullage Excel',
+  stdd_gost85: 'GOST 3900-85, γ table',
+  scaleCaption: 'Difference from API 2004',
+  toResult: 'Go to result',
+  sourceLabel: 'Measured as',
+  reference: 'reference',
+  waterShort: 'Water',
+  addTankBtn: 'Add tank',
+  commodityLabel: 'Product',
   standard: 'Standard',
   language: 'Language',
   productDensity: 'Product and density',
@@ -220,10 +272,6 @@ const en: Dict = {
   noResult: 'No result under this standard — see the warning above.',
   comparison: 'Comparison',
   deltaApi: 'Δ vs API 2004',
-  examples: 'Examples',
-  exStar: 'Gasoline STAR 10 (Excel)',
-  exM100: 'Fuel oil M-100, 64.5 °C',
-  exTengiz: 'Tengiz (54A)',
   usedInCalc: 'used: {v}',
   showFull: 'Full value',
   showRounded: 'Show rounded',
@@ -265,13 +313,24 @@ export function makeT(lang: Lang) {
 export type T = ReturnType<typeof makeT>;
 
 export const stdLabel = (t: T, s: Standard) => t(`std_${s}` as Key);
+export const stdShort = (t: T, s: Standard) => t(`sshort_${s}` as Key);
+export const stdDesc = (t: T, s: Standard) => t(`stdd_${s}` as Key);
 export const groupLabel = (t: T, g: Group2004) => t(`g_${g}` as Key);
 export const warningText = (t: T, w: Warning) => t(`w_${w.code}` as Key, w.params ?? {});
 
 /** Decimal separator per language (Russian uses a comma). */
-export function fmt(lang: Lang, x: number, digits: number): string {
-  const s = x.toFixed(digits);
-  return lang === 'ru' ? s.replace('.', ',') : s;
+export function fmt(lang: Lang, x: number, digits: number, group = true): string {
+  const fixed = x.toFixed(digits);
+  return localize(lang, fixed, group);
+}
+
+/** Thin-space thousands grouping; comma decimal for Russian. */
+export function localize(lang: Lang, num: string, group = true): string {
+  const neg = num.startsWith('-');
+  const [int, frac] = (neg ? num.slice(1) : num).split('.');
+  const g = group && int.length > 4 ? int.replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f') : int;
+  const sep = lang === 'ru' ? ',' : '.';
+  return (neg ? '−' : '') + g + (frac !== undefined ? sep + frac : '');
 }
 
 export const LangCtx = createContext<Lang>('ka');
