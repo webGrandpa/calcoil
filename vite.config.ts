@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['icon-192.png', 'icon-512.png'],
         manifest: {
-          name: 'VCF · დაშვება / Поправка',
-          short_name: 'VCF',
+          name: 'CalcOil',
+          short_name: 'CalcOil',
           description: 'Oil quantity calculation (KA/RU/EN): API MPMS 11.1-2004, ASTM D1250-80, GOST 3900',
           lang: 'ka',
           scope: '.',

@@ -27,7 +27,8 @@ interface State {
   tanks: TankDraft[];
 }
 
-const KEY = 'dashveba-v1';
+const KEY = 'calcoil-v1';
+const OLD_KEY = 'dashveba-v1';
 let seq = 0;
 const newId = () => `${Date.now().toString(36)}${(seq++).toString(36)}`;
 
@@ -79,7 +80,7 @@ const DEFAULT: State = {
 
 function load(): State {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(KEY) ?? localStorage.getItem(OLD_KEY);
     if (raw) return { ...DEFAULT, ...JSON.parse(raw) };
   } catch {
     /* storage unavailable */

@@ -432,3 +432,12 @@ dd.txt {
   margin: 0 0 0 auto;
   align-self: center;
 }
+
+.seg.lang {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.brand > div:not(.seg) {
+  min-width: 0;
+}

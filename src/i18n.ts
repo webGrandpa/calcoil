@@ -10,7 +10,7 @@ export const LANGS: { id: Lang; label: string }[] = [
 ];
 
 const ka = {
-  appName: 'დაშვება · VCF',
+  appName: 'CalcOil',
   appSub: 'ნავთობის რაოდენობის გამოთვლა',
   standard: 'სტანდარტი',
   language: 'ენა',
@@ -92,7 +92,7 @@ const ka = {
 type Dict = typeof ka;
 
 const ru: Dict = {
-  appName: 'Поправка · VCF',
+  appName: 'CalcOil',
   appSub: 'Расчёт количества нефти',
   standard: 'Стандарт',
   language: 'Язык',
@@ -172,7 +172,7 @@ const ru: Dict = {
 };
 
 const en: Dict = {
-  appName: 'Dashveba · VCF',
+  appName: 'CalcOil',
   appSub: 'Oil quantity calculation',
   standard: 'Standard',
   language: 'Language',
