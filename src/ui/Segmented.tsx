@@ -15,6 +15,8 @@ interface Props<V extends string | number> {
   /** 'fill' stretches options to equal widths; 'grid2' lays four options as 2×2 on narrow screens. */
   layout?: 'fill' | 'grid2';
   size?: 'md' | 'sm';
+  /** 'hero' = drawn on the dark result panel. */
+  tone?: 'default' | 'hero';
 }
 
 /** A labelled radio group drawn as one control. */
@@ -26,6 +28,7 @@ export function Segmented<V extends string | number>({
   onChange,
   layout = 'fill',
   size = 'md',
+  tone = 'default',
 }: Props<V>) {
   const id = useId();
   return (
@@ -36,7 +39,7 @@ export function Segmented<V extends string | number>({
       <div
         role="radiogroup"
         aria-labelledby={id}
-        className={`seg seg--${layout} seg--${size}`}
+        className={`seg seg--${layout} seg--${size} seg--${tone}`}
         onKeyDown={(e) => {
           const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
           if (!step) return;

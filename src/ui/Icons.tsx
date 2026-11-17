@@ -40,11 +40,19 @@ export function TrashIcon() {
 export function HydrometerMark({ size = 30 }: { size?: number }) {
   return (
     <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true">
-      <rect x="0" y="0" width="32" height="32" rx="8" fill="var(--petrol)" />
-      <path d="M16 4.5v12" stroke="var(--on-petrol)" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M16 6.5h2.6M16 9.5h1.8M16 12.5h2.6M16 15.5h1.8" stroke="var(--on-petrol)" strokeWidth="1.2" strokeLinecap="round" />
-      <path d="M16 16.3c-2.6 0-4.1 2.1-4.1 4.9 0 3.1 1.8 5.6 4.1 5.6s4.1-2.5 4.1-5.6c0-2.8-1.5-4.9-4.1-4.9Z" fill="var(--on-petrol)" />
+      <rect x="0" y="0" width="32" height="32" rx="8" fill="var(--hero)" />
+      <path d="M16 4.5v12" stroke="var(--on-hero)" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M16 6.5h2.6M16 9.5h1.8M16 12.5h2.6M16 15.5h1.8" stroke="var(--on-hero)" strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M16 16.3c-2.6 0-4.1 2.1-4.1 4.9 0 3.1 1.8 5.6 4.1 5.6s4.1-2.5 4.1-5.6c0-2.8-1.5-4.9-4.1-4.9Z" fill="var(--on-hero)" />
       <circle cx="16" cy="23.6" r="1.6" fill="var(--signal)" />
+    </svg>
+  );
+}
+
+export function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m9 6 6 6-6 6" />
     </svg>
   );
 }
