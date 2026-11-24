@@ -13,7 +13,7 @@ export const STANDARDS: { id: Standard; short: string }[] = [
   { id: 'gost85', short: 'ГОСТ 85' },
 ];
 
-export type WarningCode = 'range' | 'lube1980' | 'transition' | 'gostRange' | 'gost20FromApi';
+export type WarningCode = 'range' | 'lube1980' | 'transition' | 'gostRange' | 'gostExtended' | 'gostTemp' | 'gost20FromApi';
 export interface Warning {
   code: WarningCode;
   params?: Record<string, string | number>;
@@ -103,8 +103,8 @@ export function resolveDensity(d: DensityInput, commodity: Commodity): Densities
   if (commodity === 'product' && rho15 >= 770 && rho15 < 788)
     warnings.push({ code: 'transition' });
   const gamma = g20 === null ? null : g85.gamma(g20);
-  if (g20 === null || gamma === null)
-    warnings.push({ code: 'gostRange' });
+  if (g20 === null || gamma === null) warnings.push({ code: 'gostRange' });
+  else if (!g85.inTable(g20)) warnings.push({ code: 'gostExtended', params: { gamma: gamma.toFixed(6) } });
   if (d.source === 'lab15') warnings.push({ code: 'gost20FromApi' });
 
   return {
@@ -125,6 +125,8 @@ export interface TankResult {
   vcf: number | null; // unrounded (API/ASTM) or ρt/ρ20 (ГОСТ)
   vcfUsed: number | null; // rounded to 5 decimals where the standard requires it
   rhoT: number | null; // kg/m³
+  /** The density correction ("დაშვება"), kg/m³: ρt − ρ20 for ГОСТ 85 (= −γ·(t − 20)), ρt − ρ15 otherwise. */
+  corr: number | null;
   gsv: number | null; // m³ at 15 °C (ГОСТ: at 20 °C)
   mtVac: number | null;
   mtAir: number | null;
@@ -157,7 +159,7 @@ export function computeStandard(std: Standard, dens: Densities, tanks: Tank[]): 
       const r20 = dens.gost85.rho20;
       const rt = r20 === null ? null : g85.rhoAtT(r20, tk.t);
       if (r20 === null || rt === null)
-        return { ...base, ok: false, vcf: null, vcfUsed: null, rhoT: null, gsv: null, mtVac: null, mtAir: null };
+        return { ...base, ok: false, vcf: null, vcfUsed: null, rhoT: null, corr: null, gsv: null, mtVac: null, mtAir: null };
       const rtR = round(rt / 1000, 4) * 1000; // Excel rounds ρt to 0.0001 g/cm³
       const mtVac = (gov * rtR) / 1000;
       return {
@@ -166,6 +168,7 @@ export function computeStandard(std: Standard, dens: Densities, tanks: Tank[]): 
         vcf: rt / r20,
         vcfUsed: rtR / r20,
         rhoT: rt,
+        corr: rtR - r20,
         gsv: (gov * rtR) / r20,
         mtVac,
         mtAir: (mtVac * (dens.api.rho15 - ded)) / dens.api.rho15,
@@ -181,6 +184,7 @@ export function computeStandard(std: Standard, dens: Densities, tanks: Tank[]): 
       vcf: v,
       vcfUsed: vUsed,
       rhoT: r15 * v,
+      corr: r15 * v - r15,
       gsv,
       mtVac: (gsv * r15) / 1000,
       mtAir: (gsv * (r15 - airDeduction(r15))) / 1000,
@@ -205,7 +209,7 @@ export function computeStandard(std: Standard, dens: Densities, tanks: Tank[]): 
     tanks: rows,
     totals: {
       gov: rows.reduce((s, r) => s + r.gov, 0),
-      gsv: std === 'gost85' ? null : gsv,
+      gsv, // ГОСТ 85: volume at 20 °C (V20); otherwise GSV at 15 °C
       mtVac: sum('mtVac'),
       mtAir,
       lt: mtAir === null ? null : mtAir * LT_PER_MT,

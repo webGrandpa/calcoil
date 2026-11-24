@@ -8,10 +8,12 @@ interface Props {
   note?: string;
   unit?: string;
   className?: string;
+  /** Prefix positive values with '+'. */
+  signed?: boolean;
 }
 
 /** Rounded number; tap to see the full value. */
-export function Num({ value, digits, note, unit, className }: Props) {
+export function Num({ value, digits, note, unit, className, signed }: Props) {
   const lang = useContext(LangCtx);
   const t = makeT(lang);
   const [full, setFull] = useState(false);
@@ -26,7 +28,10 @@ export function Num({ value, digits, note, unit, className }: Props) {
       onClick={() => setFull((f) => !f)}
       aria-label={full ? t('showRounded') : t('showFull')}
     >
-      <span className="num-val">{localize(lang, raw)}</span>
+      <span className="num-val">
+        {signed && value > 0 ? '+' : ''}
+        {localize(lang, raw)}
+      </span>
       {unit ? <span className="num-unit">{unit}</span> : null}
       {full && note ? <span className="num-note">{note}</span> : null}
     </button>

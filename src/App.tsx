@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { computeAll, resolveDensity, STANDARDS } from './core/calc';
-import type { DensitySource, Standard, Tank } from './core/calc';
+import type { DensitySource, Standard, Tank, Warning } from './core/calc';
 import type { Commodity } from './core/api2004';
 import { detectLang, fmt, groupLabel, LangCtx, makeT, stdDesc, stdShort, warningText } from './i18n';
 import type { Key, Lang } from './i18n';
@@ -174,7 +174,11 @@ export default function App() {
   });
 
   // Notes that only concern GOST 85 mode stay out of the way elsewhere.
-  const notes = (dens?.warnings ?? []).filter((w) => w.code !== 'gost20FromApi' || s.standard === 'gost85');
+  const gostOnly = ['gost20FromApi', 'gostExtended'];
+  const notes: Warning[] = [
+    ...(dens?.warnings ?? []).filter((w) => !gostOnly.includes(w.code) || s.standard === 'gost85'),
+    ...(s.standard === 'gost85' && tanks.some((tk) => tk.t < 0 || tk.t > 50) ? [{ code: 'gostTemp' as const }] : []),
+  ];
   const signed = (d: number, digits: number) =>
     (d > 0.0005 ? '+' : '') + fmt(s.lang, Math.abs(d) < 0.0005 ? 0 : d, digits);
   const rho20Shown = s.standard === 'gost85' ? dens?.gost85.rho20 : dens?.api.rho20;
@@ -354,6 +358,14 @@ export default function App() {
                         (r.ok ? (
                           <div className="tank-out">
                             <dl className="tank-aux">
+                              {gost && (
+                                <div>
+                                  <dt>{t('corr')}</dt>
+                                  <dd>
+                                    <Num value={g(r.corr)} digits={4} signed />
+                                  </dd>
+                                </div>
+                              )}
                               <div>
                                 <dt>{gost ? 'ρt' : 'VCF'}</dt>
                                 <dd>
@@ -486,9 +498,9 @@ export default function App() {
                     </dd>
                   </div>
                   <div>
-                    <dt>{t('gsv15')}</dt>
+                    <dt>{t(s.standard === 'gost85' ? 'v20Total' : 'gsv15')}</dt>
                     <dd>
-                      <Num value={cur.totals.gsv ?? ref?.totals.gsv} digits={3} />
+                      <Num value={cur.totals.gsv} digits={3} />
                     </dd>
                   </div>
                   <div>

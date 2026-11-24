@@ -5,7 +5,7 @@ import type { Standard, WarningCode } from './core/calc';
 
 const groups: Group2004[] = ['crude', 'fuel', 'jet', 'transition', 'gasoline', 'lube'];
 const stds: Standard[] = ['api2004', 'astm1980', 'gost85'];
-const codes: WarningCode[] = ['range', 'lube1980', 'transition', 'gostRange', 'gost20FromApi'];
+const codes: WarningCode[] = ['range', 'lube1980', 'transition', 'gostRange', 'gostExtended', 'gostTemp', 'gost20FromApi'];
 
 describe('i18n', () => {
   for (const { id } of LANGS) {
@@ -14,7 +14,7 @@ describe('i18n', () => {
       const texts = [
         ...groups.map((g) => groupLabel(t, g)),
         ...stds.map((s) => stdLabel(t, s)),
-        ...codes.map((code) => warningText(t, { code, params: { rho: '1200.0', lo: 611.16, hi: 1163.86 } })),
+        ...codes.map((code) => warningText(t, { code, params: { rho: '1200.0', lo: 611.16, hi: 1163.86, gamma: '0.000924' } })),
         t('densityField'),
         t('foot1'),
       ];

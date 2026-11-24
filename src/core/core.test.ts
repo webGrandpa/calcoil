@@ -112,8 +112,25 @@ describe('ГОСТ 3900-85 γ table', () => {
     expect(g85.gamma(890.0)).toBe(0.000647);
     expect(g85.gamma(889.9)).toBe(0.00066);
     expect(g85.gamma(999.9)).toBe(0.000515);
-    expect(g85.gamma(689.9)).toBeNull();
-    expect(g85.gamma(1000.0)).toBeNull();
+  });
+
+  it('every printed γ is the Mendeleev relation at the band midpoint', () => {
+    for (const [lo, gam] of g85.GAMMA_TABLE) {
+      expect(Math.abs(g85.mendeleev(lo + 0.005) - gam)).toBeLessThan(1.5e-6);
+    }
+  });
+
+  it('extends the table with the same relation to 0.6100–1.1699 g/cm³', () => {
+    expect(g85.gamma(689.9)).toBe(0.000924);
+    expect(g85.gamma(679.5)).toBe(0.000937);
+    expect(g85.gamma(610.0)).toBe(0.001016);
+    expect(g85.gamma(1000.0)).toBe(0.000501);
+    expect(g85.gamma(1169.9)).toBe(0.00029);
+    expect(g85.gamma(609.9)).toBeNull();
+    expect(g85.gamma(1170.0)).toBeNull();
+    expect(g85.inTable(689.9)).toBe(false);
+    expect(g85.inTable(690.0)).toBe(true);
+    expect(g85.inTable(1000.0)).toBe(false);
   });
 
   it('[XLS] STAR 10: ρ20 732.0 at 12.1 °C → 0.7388', () => {
@@ -139,6 +156,14 @@ describe('Ullage chain', () => {
     expect(r.mtVac!).toBeCloseTo(4888.64, 1);
   });
 
+  it('ГОСТ 85 shows the correction itself and totals V20', () => {
+    const d = resolveDensity({ source: 'lab20', value: 732.0 }, 'product');
+    const r = computeStandard('gost85', d, tank);
+    // γ 0.000857 × (12.1 − 20) = −0.0067703 g/cm³ → added: ρt = 0.7388 after rounding to 0.0001
+    expect(r.tanks[0].corr! / 1000).toBeCloseTo(0.0068, 4);
+    expect(r.totals.gsv!).toBeCloseTo(6617 * 0.7388 / 0.732, 3);
+  });
+
   it('bbl at 60 °F applies the 15→60 °F ratio once', () => {
     const d = resolveDensity({ source: 'lab15', value: 736.5 }, 'product');
     const r = computeStandard('api2004', d, tank).totals;
@@ -146,8 +171,18 @@ describe('Ullage chain', () => {
     expect(r.bbl60!).toBeLessThan(41850); // Excel shows 41 948 (double correction)
   });
 
-  it('ГОСТ 85 refuses densities outside its table', () => {
+  it('ГОСТ 85 computes naphtha below the printed table, with a note', () => {
     const d = resolveDensity({ source: 'lab20', value: 679.5 }, 'product');
+    const r = computeStandard('gost85', d, tank);
+    expect(r.totals.complete).toBe(true);
+    expect(d.warnings.some((w) => w.code === 'gostExtended')).toBe(true);
+    // within 0.1 % of API 2004 at 12.1 °C
+    const a = computeStandard('api2004', d, tank).totals.mtVac!;
+    expect(Math.abs(r.totals.mtVac! / a - 1)).toBeLessThan(0.001);
+  });
+
+  it('ГОСТ 85 refuses densities beyond 0.6100–1.1699 g/cm³', () => {
+    const d = resolveDensity({ source: 'lab20', value: 605.0 }, 'product');
     const r = computeStandard('gost85', d, tank);
     expect(r.totals.complete).toBe(false);
     expect(d.warnings.some((w) => w.code === 'gostRange')).toBe(true);

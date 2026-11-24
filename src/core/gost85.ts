@@ -1,7 +1,11 @@
 /**
- * ГОСТ 3900-85 — table of average temperature corrections γ (g/cm³ per °C) by density at 20 °C.
+ * ГОСТ 3900-85 — average temperature corrections γ (g/cm³ per °C) by density at 20 °C.
  * ρt = ρ20 − γ (t − 20). Replaced by ГОСТ 3900-2022 from 2023-01-01; kept to reproduce current practice.
- * Bands are 0.01 g/cm³ wide; the table covers 0.6900–0.9999 g/cm³ only.
+ *
+ * The printed table covers 0.6900–0.9999 g/cm³ in 0.01 bands. Every printed value is the linear
+ * (Mendeleev) relation γ = 0.001828 − 0.00132·ρ20 taken at the band's midpoint (checked in tests,
+ * within 0.000001). Outside the printed range the same relation extends the table band by band,
+ * over the density range API 11.1 covers (0.6100–1.1699 g/cm³).
  */
 
 export const GAMMA_TABLE: ReadonlyArray<readonly [number, number]> = [
@@ -14,14 +18,33 @@ export const GAMMA_TABLE: ReadonlyArray<readonly [number, number]> = [
   [0.99, 0.000515],
 ];
 
-/** γ for a density at 20 °C in kg/m³; null when outside the table (below 690 or ≥ 1000). */
+/** Mendeleev relation behind the table, ρ20 in g/cm³. */
+export const mendeleev = (rho20gcc: number) => 0.001828 - 0.00132 * rho20gcc;
+
+const MIN_BAND = 61; // 0.6100 g/cm³
+const MAX_BAND = 116; // 1.1600–1.1699 g/cm³
+
+/** Band index (69 = 0.6900–0.6999) of a density at 20 °C in kg/m³, on 0.1 kg/m³ steps to avoid float drift. */
+function band(rho20: number): number {
+  return Math.floor(Math.round(rho20 * 10) / 100);
+}
+
+/** True when ρ20 lies inside the printed ГОСТ 3900-85 table. */
+export function inTable(rho20: number): boolean {
+  const b = band(rho20);
+  return b >= 69 && b <= 99;
+}
+
+/**
+ * γ for a density at 20 °C in kg/m³: the printed value inside the table, the same relation at the
+ * band midpoint outside it; null beyond 0.6100–1.1699 g/cm³.
+ */
 export function gamma(rho20: number): number | null {
-  // Work on integer 0.1 kg/m³ steps to avoid float drift at band edges.
-  const tenths = Math.round(rho20 * 10);
-  if (tenths < 6900 || tenths >= 10000) return null;
-  const band = Math.floor(tenths / 100); // 69..99
-  const row = GAMMA_TABLE[band - 69];
-  return row ? row[1] : null;
+  const b = band(rho20);
+  if (b < MIN_BAND || b > MAX_BAND) return null;
+  const row = GAMMA_TABLE[b - 69];
+  if (row) return row[1];
+  return Math.round(mendeleev((b + 0.5) / 100) * 1e6) / 1e6;
 }
 
 /** ρt in kg/m³. */
