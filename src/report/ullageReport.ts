@@ -43,6 +43,8 @@ export interface ReportInput {
   final: StageEval;
   conditions: { initial: StageConditions; final: StageConditions };
   bl: number;
+  /** Basis the B/L figure is given on; the ship figure is compared on the same one. Default: air. */
+  blMass?: 'air' | 'vac';
   vef: number;
   generatedAt: Date;
 }
@@ -288,9 +290,10 @@ export function buildReportSheet(inp: ReportInput): SheetSpec {
   put(RQ, 13, null, 'n4');
   merge(RQ, 13, RQ, 14);
   put(RQ, 15, vef, 'n4');
-  const ss = shipShore(q.mtAir, inp.bl, inp.vef);
+  const blVac = inp.blMass === 'vac';
+  const ss = shipShore(blVac ? q.mtVac : q.mtAir, inp.bl, inp.vef);
   const blRows: [string, number | null, number | null, StyleKey][] = [
-    ['B/L figure, MT in air', fin(inp.bl), fin(inp.bl), 'n3'],
+    [`B/L figure, MT in ${blVac ? 'vacuum' : 'air'}`, fin(inp.bl), fin(inp.bl), 'n3'],
     ['Ship − B/L, MT', ss.diff, ss.corrected !== null && Number.isFinite(inp.bl) ? ss.corrected - inp.bl : null, 'n3'],
     ['Ship / B/L', ss.ratio, ss.ratioVef, 'n5'],
   ];
@@ -390,7 +393,7 @@ export function buildReport(inp: ReportInput): Uint8Array {
 export function reportSummary(inp: ReportInput): string {
   const q = transferred(inp.op, inp.initial, inp.final, inp.standard);
   const n = (x: number | null, d = 3) => (x === null ? '—' : x.toFixed(d));
-  const ss = shipShore(q.mtAir, inp.bl, inp.vef);
+  const ss = shipShore(inp.blMass === 'vac' ? q.mtVac : q.mtAir, inp.bl, inp.vef);
   const verb = inp.op === 'load' ? 'loaded' : 'discharged';
   return [
     `Ullage report — ${inp.vessel}${inp.meta.grade ? `, ${inp.meta.grade}` : ''}, ${inp.meta.date}`,
@@ -400,7 +403,7 @@ export function reportSummary(inp: ReportInput): string {
     `  MT in air @ 15°C: ${n(q.mtAir)}`,
     `  MT in vacuum @ 15°C: ${n(q.mtVac)}`,
     `  GSV @ 15°C, m³: ${n(q.gsv)}`,
-    ss.ratio !== null ? `  Ship / B/L: ${n(ss.ratio, 5)} (B/L ${n(inp.bl)} MT)` : '',
+    ss.ratio !== null ? `  Ship / B/L: ${n(ss.ratio, 5)} (B/L ${n(inp.bl)} MT in ${inp.blMass === 'vac' ? 'vacuum' : 'air'})` : '',
     '',
     'Full report attached (Excel).',
   ]

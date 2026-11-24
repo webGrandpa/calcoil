@@ -56,3 +56,107 @@ export function ChevronIcon() {
     </svg>
   );
 }
+
+const base = {
+  viewBox: '0 0 24 24',
+  'aria-hidden': true,
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+};
+
+export function BackIcon() {
+  return (
+    <svg {...base} width="24" height="24" strokeWidth="2">
+      <path d="M15 5.5 8.5 12l6.5 6.5" />
+    </svg>
+  );
+}
+
+/** Jobs: a clipboard with a tick list. */
+export function JobsIcon() {
+  return (
+    <svg {...base} width="24" height="24" strokeWidth="1.7">
+      <rect x="5" y="4.5" width="14" height="16" rx="2.5" />
+      <path d="M9 3.5h6v2.5H9zM8.5 11h7M8.5 14.5h7M8.5 18h4" />
+    </svg>
+  );
+}
+
+/** Vessels: a tanker hull seen from the side. */
+export function ShipIcon() {
+  return (
+    <svg {...base} width="24" height="24" strokeWidth="1.7">
+      <path d="M3 14.5h18l-2.4 4.2a1.6 1.6 0 0 1-1.4.8H6.8a1.6 1.6 0 0 1-1.4-.8L3 14.5Z" />
+      <path d="M6 14.5V11h12v3.5M14.5 11V6.5h3V11M9 11V9" />
+    </svg>
+  );
+}
+
+/** Calculator: a hydrometer stem with a scale. */
+export function CalcIcon() {
+  return (
+    <svg {...base} width="24" height="24" strokeWidth="1.7">
+      <path d="M12 3v9.5" />
+      <path d="M12 5.5h2.2M12 8h1.6M12 10.5h2.2" />
+      <path d="M12 12.5c-2.4 0-3.8 1.9-3.8 4.4 0 2.8 1.7 4.6 3.8 4.6s3.8-1.8 3.8-4.6c0-2.5-1.4-4.4-3.8-4.4Z" />
+    </svg>
+  );
+}
+
+export function SettingsIcon() {
+  return <GearIcon />;
+}
+
+export function CheckIcon() {
+  return (
+    <svg {...base} width="16" height="16" strokeWidth="2.4">
+      <path d="m5 12.5 4.2 4L19 7" />
+    </svg>
+  );
+}
+
+export function MoreIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor">
+      <circle cx="5.5" cy="12" r="1.8" />
+      <circle cx="12" cy="12" r="1.8" />
+      <circle cx="18.5" cy="12" r="1.8" />
+    </svg>
+  );
+}
+
+export function PrevIcon() {
+  return (
+    <svg {...base} width="22" height="22" strokeWidth="2">
+      <path d="M14.5 6 8.5 12l6 6" />
+    </svg>
+  );
+}
+
+export function NextIcon() {
+  return (
+    <svg {...base} width="22" height="22" strokeWidth="2">
+      <path d="m9.5 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+export function MailIcon() {
+  return (
+    <svg {...base} width="20" height="20" strokeWidth="1.8">
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2.2" />
+      <path d="m4.5 7 7.5 6 7.5-6" />
+    </svg>
+  );
+}
+
+export function FileIcon() {
+  return (
+    <svg {...base} width="20" height="20" strokeWidth="1.8">
+      <path d="M7 3.5h7l4.5 4.5v12.5H7z" />
+      <path d="M14 3.5V8h4.5M9.5 13l5 5M14.5 13l-5 5" />
+    </svg>
+  );
+}

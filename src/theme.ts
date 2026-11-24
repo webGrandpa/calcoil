@@ -1,7 +1,7 @@
 export type ThemePref = 'system' | 'light' | 'dark';
 
-const META_LIGHT = '#e9eef0';
-const META_DARK = '#0f1a21';
+const META_LIGHT = '#e2e7ea';
+const META_DARK = '#071118';
 
 /** Applies the theme to <html> and keeps the browser chrome colour in step. */
 export function applyTheme(pref: ThemePref) {

@@ -1,50 +1,58 @@
 import { tankCode } from '../core/ship';
-import type { TankEval } from '../core/ship';
+import type { ShipTankDef, TankEval } from '../core/ship';
+import { tankState, tankWarn } from '../app/derive';
 import { fmt } from '../i18n';
 import type { Lang } from '../i18n';
-import type { TankDefDraft } from './model';
-import type { ST } from './strings';
+import type { ST } from '../ship/strings';
 
 interface Props {
-  tanks: TankDefDraft[];
+  defs: ShipTankDef[];
   evals: Record<string, TankEval>;
   lang: Lang;
   st: ST;
   onOpen: (id: string) => void;
 }
 
-/** The cargo tanks as seen from the bridge looking forward: bow on top, port left, starboard right. */
-export function ShipPlan({ tanks, evals, lang, st, onOpen }: Props) {
-  const hasC = tanks.some((t) => t.side === 'C');
-  const rows = [...new Set(tanks.map((t) => t.row))].sort((a, b) => a - b);
-  const cols: TankDefDraft['side'][] = hasC ? ['P', 'C', 'S'] : ['P', 'S'];
-  const at = (row: number, side: string) => tanks.find((t) => t.row === row && t.side === side);
+/**
+ * The cargo tanks as the loading master walks them: bow ahead, port on the left with its red
+ * edge, starboard on the right with its green one. A tile shows what was gauged and the GOV.
+ */
+export function ShipPlan({ defs, evals, lang, st, onOpen }: Props) {
+  const hasC = defs.some((t) => t.side === 'C');
+  const rows = [...new Set(defs.map((t) => t.row))].sort((a, b) => a - b);
+  const cols: ShipTankDef['side'][] = hasC ? ['P', 'C', 'S'] : ['P', 'S'];
+  const at = (row: number, side: string) => defs.find((t) => t.row === row && t.side === side);
 
   return (
     <div className={`plan ${hasC ? 'plan--3' : 'plan--2'}`}>
       <div className="plan-bow" aria-hidden="true">
         <span>{st('bow')}</span>
       </div>
-      <div className="plan-grid" role="list">
+      <div className="plan-sides" aria-hidden="true">
         {cols.map((c) => (
-          <span key={c} className="plan-col" aria-hidden="true">
+          <span key={c} className={`plan-side plan-side--${c}`}>
             {st(c === 'P' ? 'colP' : c === 'C' ? 'colC' : 'colS')}
           </span>
         ))}
+      </div>
+      <div className="plan-grid" role="list">
         {rows.map((r) =>
           cols.map((c) => {
             const t = at(r, c);
             if (!t) return <span key={`${r}${c}`} className="plan-gap" aria-hidden="true" />;
             const ev = evals[t.id];
-            const empty = ev?.ready && ev.tov === 0 && ev.ullage.value === null;
-            const state = !ev?.touched ? 'todo' : empty ? 'empty' : ev.ready ? 'ready' : 'part';
-            const warn = !!ev?.notes.some((n) => !['noTov', 'noTemp', 'noUllage'].includes(n.code));
+            const state = tankState(ev);
+            const warn = tankWarn(ev);
+            const label = `${tankCode(t)}: ${
+              state === 'todo' ? st('tileTodo') : state === 'empty' ? st('tileEmpty') : state === 'part' ? st('tilePart') : ''
+            }${ev?.gov !== null && ev?.gov !== undefined && state !== 'empty' ? ` GOV ${fmt(lang, ev.gov, 1)} ${st('m3')}` : ''}`;
             return (
               <button
                 key={t.id}
                 type="button"
                 role="listitem"
-                className={`tile tile--${state} ${warn ? 'tile--warn' : ''}`}
+                aria-label={label}
+                className={`tile tile--${state} tile--${t.side} ${warn ? 'tile--warn' : ''}`}
                 onClick={() => onOpen(t.id)}
               >
                 <span className="tile-code">{tankCode(t)}</span>
@@ -52,9 +60,7 @@ export function ShipPlan({ tanks, evals, lang, st, onOpen }: Props) {
                 {state === 'empty' && <span className="tile-sub">{st('tileEmpty')}</span>}
                 {(state === 'ready' || state === 'part') && (
                   <>
-                    <span className="tile-main">
-                      {ev.corrUllage !== null ? `${fmt(lang, ev.corrUllage, 3)} ${st('m')}` : '—'}
-                    </span>
+                    <span className="tile-main">{ev.corrUllage !== null ? `${fmt(lang, ev.corrUllage, 3)}` : '—'}</span>
                     <span className="tile-sub">{ev.gov !== null ? `${fmt(lang, ev.gov, 1)} ${st('m3')}` : st('tilePart')}</span>
                   </>
                 )}
