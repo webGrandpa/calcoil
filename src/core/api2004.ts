@@ -80,15 +80,33 @@ export function vcf(rhoBase: number, tC: number, c: Commodity, base = 15): numbe
   return ctl60(rho60, tC, group) / ctl60(rho60, base, group);
 }
 
-/** Density at base from a true (not hydrometer) density measured at tC. */
+/**
+ * Density at base from a true (not hydrometer) density measured at tC.
+ * Fixed-point iteration first; it diverges in the refined-products transition zone above ~95 °C,
+ * so the result is checked and, if needed, solved by bisection (ρ·VCF rises with ρ over the range).
+ */
 export function baseFromObserved(rhoT: number, tC: number, c: Commodity, base = 15): number {
+  const f = (r: number) => r * vcf(r, tC, c, base) - rhoT;
   let r = rhoT;
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 60; i++) {
     const next = rhoT / vcf(r, tC, c, base);
-    if (Math.abs(next - r) < 1e-11) return next;
+    if (Math.abs(next - r) < 1e-11) {
+      if (Math.abs(f(next)) < 1e-8) return next;
+      break;
+    }
     r = next;
   }
-  return r;
+  return bisect(f, rhoT * 0.7, rhoT * 1.4);
+}
+
+/** Root of an increasing function on [lo, hi]; at a group-boundary gap it returns the jump point. */
+export function bisect(f: (x: number) => number, lo: number, hi: number): number {
+  for (let i = 0; i < 200 && hi - lo > 1e-11; i++) {
+    const mid = (lo + hi) / 2;
+    if (f(mid) > 0) hi = mid;
+    else lo = mid;
+  }
+  return (lo + hi) / 2;
 }
 
 /** Convert density between 15 and 20 °C bases. */

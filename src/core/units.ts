@@ -16,7 +16,7 @@ export function airDeduction(rho15: number): number {
   return rho15 < 996.6 ? 1.1 : 1.0;
 }
 
-export const LT_PER_MT = 0.984206; // 1 long ton = 1016.0469 kg
+export const LT_PER_MT = 1000 / 1016.0469088; // 1 long ton = 1016.0469088 kg exactly
 export const BBL_PER_M3 = 6.289811;
 
 export function apiGravity(rho60: number): number {

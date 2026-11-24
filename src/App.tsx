@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { computeAll, resolveDensity, STANDARDS } from './core/calc';
+import { computeAll, resolveDensity, STANDARDS, tankWarnings } from './core/calc';
 import type { DensitySource, Standard, Tank, Warning } from './core/calc';
+import { parseNum } from './core/parse';
 import type { Commodity } from './core/api2004';
 import { detectLang, fmt, groupLabel, LangCtx, makeT, stdDesc, stdShort, warningText } from './i18n';
 import type { Key, Lang } from './i18n';
@@ -67,10 +68,10 @@ function load(): State {
   return DEFAULT;
 }
 
-function num(s: string): number {
-  const v = parseFloat(s.replace(',', '.').replace(/\s/g, ''));
-  return Number.isFinite(v) ? v : NaN;
-}
+const num = parseNum;
+/** Empty means zero (water, a tank not yet filled in); anything else must parse. */
+const numOr0 = (s: string) => (s.trim() === '' ? 0 : parseNum(s));
+const bad = (x: number) => !Number.isFinite(x);
 
 /** Accepts kg/m³ or g/cm³ (values below 2 are treated as g/cm³). */
 function densityKg(s: string): number {
@@ -125,17 +126,19 @@ export default function App() {
   const needsT = s.source === 'labT' || s.source === 'hydro';
   const densOk = densVal > 500 && densVal < 1200;
   const tOk = !needsT || Number.isFinite(num(s.densT));
+  const menOk = s.source !== 'hydro' || !bad(numOr0(s.meniscus));
 
+  // No silent defaults: an unreadable volume or a missing temperature leaves that tank uncomputed.
   const tanks: Tank[] = s.tanks.map((tk) => ({
     id: tk.id,
     name: tk.name,
-    tov: num(tk.tov) || 0,
-    water: num(tk.water) || 0,
-    t: Number.isFinite(num(tk.t)) ? num(tk.t) : 15,
+    tov: numOr0(tk.tov),
+    water: numOr0(tk.water),
+    t: num(tk.t),
   }));
 
   const dens = useMemo(() => {
-    if (!densOk || !tOk) return null;
+    if (!densOk || !tOk || !menOk) return null;
     try {
       return resolveDensity(
         {
@@ -143,14 +146,14 @@ export default function App() {
           value: densVal,
           tC: needsT ? num(s.densT) : undefined,
           hydroCal: s.hydroCal,
-          meniscus: num(s.meniscus) || 0,
+          meniscus: numOr0(s.meniscus),
         },
         s.commodity,
       );
     } catch {
       return null;
     }
-  }, [s.source, densVal, s.densT, s.hydroCal, s.meniscus, s.commodity, densOk, tOk, needsT]);
+  }, [s.source, densVal, s.densT, s.hydroCal, s.meniscus, s.commodity, densOk, tOk, menOk, needsT]);
 
   const tanksKey = JSON.stringify(tanks);
   const all = useMemo(() => (dens ? computeAll(dens, tanks) : null), [dens, tanksKey]);
@@ -174,10 +177,14 @@ export default function App() {
   });
 
   // Notes that only concern GOST 85 mode stay out of the way elsewhere.
-  const gostOnly = ['gost20FromApi', 'gostExtended'];
+  const onlyFor: Partial<Record<Warning['code'], Standard>> = {
+    gost20FromApi: 'gost85',
+    gostExtended: 'gost85',
+    range1980: 'astm1980',
+  };
   const notes: Warning[] = [
-    ...(dens?.warnings ?? []).filter((w) => !gostOnly.includes(w.code) || s.standard === 'gost85'),
-    ...(s.standard === 'gost85' && tanks.some((tk) => tk.t < 0 || tk.t > 50) ? [{ code: 'gostTemp' as const }] : []),
+    ...(dens?.warnings ?? []).filter((w) => (onlyFor[w.code] ?? s.standard) === s.standard),
+    ...tankWarnings(s.standard, dens, tanks),
   ];
   const signed = (d: number, digits: number) =>
     (d > 0.0005 ? '+' : '') + fmt(s.lang, Math.abs(d) < 0.0005 ? 0 : d, digits);
@@ -252,6 +259,7 @@ export default function App() {
                   value={s.meniscus}
                   onChange={(v) => set({ meniscus: v })}
                   unit={t('kgm3')}
+                  invalid={!menOk}
                 />
               )}
 
@@ -350,9 +358,19 @@ export default function App() {
                         )}
                       </div>
                       <div className="tank-fields">
-                        <Field label={t('tov')} value={tk.tov} onChange={(v) => updTank(tk.id, { tov: v })} />
-                        <Field label={t('water')} value={tk.water} onChange={(v) => updTank(tk.id, { water: v })} />
-                        <Field label={t('tShort')} value={tk.t} onChange={(v) => updTank(tk.id, { t: v })} />
+                        <Field
+                          label={t('tov')}
+                          value={tk.tov}
+                          onChange={(v) => updTank(tk.id, { tov: v })}
+                          invalid={bad(numOr0(tk.tov))}
+                        />
+                        <Field
+                          label={t('water')}
+                          value={tk.water}
+                          onChange={(v) => updTank(tk.id, { water: v })}
+                          invalid={bad(numOr0(tk.water))}
+                        />
+                        <Field label={t('tShort')} value={tk.t} onChange={(v) => updTank(tk.id, { t: v })} invalid={bad(num(tk.t))} />
                       </div>
                       {r &&
                         (r.ok ? (
@@ -392,7 +410,9 @@ export default function App() {
                             </p>
                           </div>
                         ) : (
-                          <p className="msg msg--err">{t('cannotCompute')}</p>
+                          <p className="msg msg--err">
+                            {bad(tanks[i].tov) || bad(tanks[i].water) || bad(tanks[i].t) ? t('fillTank') : t('cannotCompute')}
+                          </p>
                         ))}
                     </li>
                   );

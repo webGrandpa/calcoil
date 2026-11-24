@@ -13,7 +13,17 @@ export const STANDARDS: { id: Standard; short: string }[] = [
   { id: 'gost85', short: 'ГОСТ 85' },
 ];
 
-export type WarningCode = 'range' | 'lube1980' | 'transition' | 'gostRange' | 'gostExtended' | 'gostTemp' | 'gost20FromApi';
+export type WarningCode =
+  | 'range'
+  | 'range1980'
+  | 'transition'
+  | 'gostRange'
+  | 'gostExtended'
+  | 'gostTemp'
+  | 'gost20FromApi'
+  | 'tempRange'
+  | 'temp1980'
+  | 'waterOverTov';
 export interface Warning {
   code: WarningCode;
   params?: Record<string, string | number>;
@@ -30,9 +40,9 @@ export interface DensityInput {
 export interface Tank {
   id: string;
   name: string;
-  tov: number; // m³
+  tov: number; // m³ (NaN = not a number → tank not computed)
   water: number; // m³ free water (+ OBQ if any)
-  t: number; // °C
+  t: number; // °C (NaN = missing → tank not computed; never defaulted)
 }
 
 export interface Densities {
@@ -57,7 +67,8 @@ export function resolveDensity(d: DensityInput, commodity: Commodity): Densities
   let g20: number | null;
   let derivedFromApi = false;
 
-  const c80: Commodity = commodity === 'lube' ? 'product' : commodity;
+  // ASTM 1980 uses 54A / 54B / 54D by commodity.
+  const c80: Commodity = commodity;
 
   switch (d.source) {
     case 'lab15':
@@ -87,7 +98,8 @@ export function resolveDensity(d: DensityInput, commodity: Commodity): Densities
       rho15 = api.baseFromObserved(corrected, t, commodity, 15);
       rho20 = api.convertBase(rho15, 15, 20, commodity);
       r1980 = cal === 15 ? a80.rho15FromObserved(reading, t, c80, true) : a80.rho15FromObserved(corrected, t, c80, false);
-      g20 = cal === 20 ? g85.rho20FromObserved(reading, t) : g85.rho20FromObserved(corrected, t);
+      // ГОСТ 3900-85 Appendix 1 includes the glass expansion of the hydrometer, so γ is applied to ρt, not the raw reading.
+      g20 = g85.rho20FromObserved(corrected, t);
       break;
     }
   }
@@ -99,7 +111,9 @@ export function resolveDensity(d: DensityInput, commodity: Commodity): Densities
       code: 'range',
       params: { rho: rho15.toFixed(1), lo: api.RANGE_15[commodity][0], hi: api.RANGE_15[commodity][1] },
     });
-  if (commodity === 'lube') warnings.push({ code: 'lube1980' });
+  const r80 = a80.RANGE_1980[commodity];
+  if (!inRange(r1980, r80))
+    warnings.push({ code: 'range1980', params: { rho: r1980.toFixed(1), lo: r80[0], hi: r80[1] } });
   if (commodity === 'product' && rho15 >= 770 && rho15 < 788)
     warnings.push({ code: 'transition' });
   const gamma = g20 === null ? null : g85.gamma(g20);
@@ -150,11 +164,13 @@ export interface StandardResult {
 
 export function computeStandard(std: Standard, dens: Densities, tanks: Tank[]): StandardResult {
   const c = dens.commodity;
-  const c80: Commodity = c === 'lube' ? 'product' : c;
+  const c80: Commodity = c;
   const ded = airDeduction(dens.api.rho15);
   const rows: TankResult[] = tanks.map((tk) => {
     const gov = Math.max(0, tk.tov - tk.water);
     const base = { id: tk.id, name: tk.name, gov, t: tk.t };
+    if (!Number.isFinite(tk.tov) || !Number.isFinite(tk.water) || !Number.isFinite(tk.t))
+      return { ...base, gov: 0, ok: false, vcf: null, vcfUsed: null, rhoT: null, corr: null, gsv: null, mtVac: null, mtAir: null };
     if (std === 'gost85') {
       const r20 = dens.gost85.rho20;
       const rt = r20 === null ? null : g85.rhoAtT(r20, tk.t);
@@ -217,6 +233,25 @@ export function computeStandard(std: Standard, dens: Densities, tanks: Tank[]): 
       complete,
     },
   };
+}
+
+/** Limits of API 11.1-2004 (and ГОСТ 3900-2022), °C. */
+export const T_RANGE_2004: [number, number] = [-50, 150];
+
+/** Notes that depend on the tanks and the chosen standard. */
+export function tankWarnings(std: Standard, dens: Densities | null, tanks: Tank[]): Warning[] {
+  const out: Warning[] = [];
+  const ts = tanks.map((tk) => tk.t).filter((t) => Number.isFinite(t));
+  if (ts.some((t) => t < T_RANGE_2004[0] || t > T_RANGE_2004[1]))
+    out.push({ code: 'tempRange', params: { lo: T_RANGE_2004[0], hi: T_RANGE_2004[1] } });
+  if (std === 'astm1980' && dens) {
+    const hi = a80.maxT1980(dens.astm1980.rho15, dens.commodity);
+    if (ts.some((t) => t < a80.MIN_T_1980 || t > hi)) out.push({ code: 'temp1980', params: { lo: a80.MIN_T_1980, hi } });
+  }
+  if (std === 'gost85' && ts.some((t) => t < 0 || t > 50)) out.push({ code: 'gostTemp' });
+  const over = tanks.filter((tk) => Number.isFinite(tk.tov) && Number.isFinite(tk.water) && tk.water > tk.tov);
+  if (over.length) out.push({ code: 'waterOverTov', params: { tanks: over.map((tk) => tk.name).join(', ') } });
+  return out;
 }
 
 export function computeAll(dens: Densities, tanks: Tank[]): Record<Standard, StandardResult> {
