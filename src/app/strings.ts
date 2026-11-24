@@ -128,6 +128,16 @@ const ka = {
   restore: 'ფაილიდან აღდგენა',
   restoreDone: 'აღდგა: {v} გემი, {j} ოპერაცია.',
   restoreErr: 'ფაილი ვერ წავიკითხე — ეს CalcOil-ის სარეზერვო ფაილი არ არის.',
+  updReady: 'CalcOil-ის ახალი ვერსია მზადაა',
+  updApply: 'განახლება',
+  setVersion: 'ვერსია',
+  buildOf: 'აწყობა {date}',
+  checkUpdates: 'განახლების შემოწმება',
+  upd_found: 'ახალი ვერსია ჩამოიტვირთა — ზემოთ დააჭირე „განახლებას“.',
+  upd_latest: 'უახლესი ვერსიაა.',
+  upd_offline: 'ინტერნეტი არ არის — შეამოწმე მოგვიანებით.',
+  upd_unsupported: 'განახლება მუშაობს დაინსტალირებულ აპში ან საიტის მისამართზე, არა ფაილიდან.',
+  updHint: 'ახალი ვერსია ფონში იტვირთება; აპი მხოლოდ შენი შეხებით გადაიტვირთება, შეყვანილი მონაცემები რჩება.',
 };
 
 type Dict = typeof ka;
@@ -259,6 +269,16 @@ const ru: Dict = {
   restore: 'Восстановить из файла',
   restoreDone: 'Восстановлено: судов {v}, операций {j}.',
   restoreErr: 'Не удалось прочитать файл — это не резервная копия CalcOil.',
+  updReady: 'Готова новая версия CalcOil',
+  updApply: 'Обновить',
+  setVersion: 'Версия',
+  buildOf: 'сборка {date}',
+  checkUpdates: 'Проверить обновления',
+  upd_found: 'Новая версия загружена — нажмите «Обновить» вверху.',
+  upd_latest: 'Установлена последняя версия.',
+  upd_offline: 'Нет интернета — проверьте позже.',
+  upd_unsupported: 'Обновления работают в установленном приложении или на сайте, не из файла.',
+  updHint: 'Новая версия загружается в фоне; приложение перезапустится только по вашему нажатию, введённые данные сохранятся.',
 };
 
 const en: Dict = {
@@ -387,6 +407,16 @@ const en: Dict = {
   restore: 'Restore from file',
   restoreDone: 'Restored: {v} vessels, {j} jobs.',
   restoreErr: 'Could not read the file — it is not a CalcOil backup.',
+  updReady: 'A new version of CalcOil is ready',
+  updApply: 'Update',
+  setVersion: 'Version',
+  buildOf: 'built {date}',
+  checkUpdates: 'Check for updates',
+  upd_found: 'A new version has downloaded — tap “Update” at the top.',
+  upd_latest: 'This is the latest version.',
+  upd_offline: 'No internet — check again later.',
+  upd_unsupported: 'Updates work in the installed app or on the website, not from a file.',
+  updHint: 'New versions download in the background; the app restarts only when you tap, and what you entered stays.',
 };
 
 const DICTS: Record<Lang, Dict> = { ka, ru, en };

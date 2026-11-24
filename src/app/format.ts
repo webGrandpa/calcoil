@@ -18,6 +18,14 @@ export function timeOf(ms: number): string {
   return `${p(d.getDate())}.${p(d.getMonth() + 1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+/** dd.mm.yyyy hh:mm in the phone's time zone. */
+export function dateTimeOf(ms: number): string {
+  if (!Number.isFinite(ms)) return '—';
+  const d = new Date(ms);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
 /** Moves focus to the next input on Enter, so a column of readings can be typed without touching the screen. */
 export function enterToNext(e: React.KeyboardEvent<HTMLElement>) {
   if (e.key !== 'Enter') return;

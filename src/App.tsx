@@ -13,6 +13,7 @@ import { StageScreen } from './screens/StageScreen';
 import { TankScreen } from './screens/TankScreen';
 import { VesselScreen, VesselsScreen } from './screens/VesselsScreen';
 import { TabBar } from './ui/AppBar';
+import { UpdateBanner } from './ui/UpdateBanner';
 import type { Tab } from './ui/AppBar';
 
 const TAB_OF: Partial<Record<Route['name'], Tab>> = { jobs: 'jobs', vessels: 'vessels', calc: 'calc', settings: 'settings' };
@@ -55,6 +56,7 @@ function Shell() {
 
   return (
     <div className={`app ${tab ? 'app--tabs' : ''}`} data-route={route.name}>
+      <UpdateBanner />
       <Screen route={route} />
       {tab && (
         <TabBar

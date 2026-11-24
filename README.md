@@ -25,7 +25,7 @@ Loading Master-ის სამუშაო ინსტრუმენტი (P
 npm install
 npm test            # 69 ტესტი: საკონტროლო მნიშვნელობები, გაზომვის წესები, რაპორტი, მარშრუტები
 npm run dev
-npm run build       # dist/ — PWA (service worker, offline)
+npm run build       # dist/ — PWA (service worker, offline; ახალი ვერსია ფონში იტვირთება და „განახლება“ ზოლით ირთვება)
 npm run build:single  # dist-single/index.html — ერთი ფაილი
 ```
 

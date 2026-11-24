@@ -1,6 +1,9 @@
 import { useRef, useState } from 'react';
 import { useApp } from '../app/context';
+import { checkNow } from '../app/pwa';
+import type { CheckResult } from '../app/pwa';
 import { today } from '../app/store';
+import { dateTimeOf } from '../app/format';
 import type { Settings, Store } from '../app/store';
 import { STANDARDS } from '../core/calc';
 import type { Standard } from '../core/calc';
@@ -19,6 +22,7 @@ export function SettingsScreen() {
   const { store, update, t, st, at } = useApp();
   const s = store.settings;
   const [msg, setMsg] = useState('');
+  const [upd, setUpd] = useState<CheckResult | 'busy' | ''>('');
   const file = useRef<HTMLInputElement>(null);
   const set = (p: Partial<Settings>) => update((x) => ({ ...x, settings: { ...x.settings, ...p } }));
   const setRep = (k: keyof ReportDefaults, v: string) => update((x) => ({ ...x, settings: { ...x.settings, report: { ...x.settings.report, [k]: v } } }));
@@ -130,6 +134,33 @@ export function SettingsScreen() {
               {msg}
             </p>
           )}
+        </section>
+
+        <section className="card" aria-labelledby="h-ver">
+          <h2 id="h-ver" className="card-title">
+            {at('setVersion')}
+          </h2>
+          <p className="msg">
+            CalcOil, {at('buildOf', { date: dateTimeOf(Date.parse(__APP_BUILD__)) })}
+            {__APP_COMMIT__ ? ` (${__APP_COMMIT__})` : ''}
+          </p>
+          <button
+            type="button"
+            className="btn-ghost"
+            disabled={upd === 'busy'}
+            onClick={async () => {
+              setUpd('busy');
+              setUpd(await checkNow());
+            }}
+          >
+            {at('checkUpdates')}
+          </button>
+          {upd && upd !== 'busy' && (
+            <p className="msg" role="status">
+              {at(`upd_${upd}`)}
+            </p>
+          )}
+          <p className="field-hint">{at('updHint')}</p>
         </section>
 
         <footer className="foot">
